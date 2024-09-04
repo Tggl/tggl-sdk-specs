@@ -1,6 +1,8 @@
 # The Reporting class
 ## Usage
-This class will be instantiated and used like a logger:
+The goal of the reporting is to accumulate data in memory and send it to the Tggl API every few seconds as a batch. this will allow Tggl users to see on the Tggl dashboard which flags are being used and which are not. so everytime the app calls the SDK to see if a flag is active or not, the SDK will report that to the Tggl API.
+
+This class can be instantiated and used like a logger:
 ```typescript
 const reporter = new Reporting()
 
@@ -21,13 +23,13 @@ reporter.reportContext({
 })
 ```
 
-Note that calling `reportFlag` and `reportContext` simple accumulates the data in memory.
+Note that calling `reportFlag` and `reportContext` simply accumulates the data in memory, no API call is performed. The actual API call call is performed in the background at regular intervals (depending on the technology).
 
 ## When is the report actually sent?
 It depends on you language and platform.
 - Short-lived processes (eg. PHP): the report is sent when the process ends, ideally automatically without requiring the user to explicitly call `sendReport`.
-- Long-lived processes (eg. Node.js): a report is sent every 2 seconds (if not empty) or when the process ends.
-- Hybrid: maybe the target language allows for background threads or other ways to send the report.
+- Long-lived processes (eg. Node.js): a report is sent every few seconds (if not empty) or when the process ends.
+- Hybrid: maybe the target language allows for background threads or other ways to send the report in the background.
 
 It is up to you to implement the best way to send the report based on your language, ideally without blocking the main thread (in the background) and without the user having to do anything manually.
 
@@ -104,6 +106,9 @@ Calling this function just accumulates the data in memory until the report is se
 ```typescript
 function reportContext(context: Record<string, any>): void
 ```
-- `receivedProperties` sends all the received keys.
+Calling this method also acucmulates data without sending anything until the rport is actually sent in the background.
+
+You can follow the doc and the JS implementation, but in short:
+- `receivedProperties` sends all the received keys with dates of first and last received.
 - `receivedValues` only sends the non-empty string values.
 - `receivedValues` also sends non-empty string labels for keys that match together, one ends with id and the other with name (eg. `userId` and `userName`). If you copy the JS implementation that should just work.

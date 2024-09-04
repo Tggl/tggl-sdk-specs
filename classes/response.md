@@ -2,6 +2,13 @@
 ## Usage
 The response class is a wrapper to the API response. It will be used like this:
 ```typescript
+const apiJsonResponse = {
+  'my-feature': true,
+  'my-other-feature': 'value'
+}
+
+const response = new Response(apiJsonResponse)
+
 response.isActive('my-feature') // boolean
 response.get('my-feature') // any
 response.get('my-feature', 'my default value') // any 
