@@ -1,20 +1,18 @@
 # The Reporting class
 ## Usage
-The goal of the reporting is to accumulate data in memory and send it to the Tggl API every few seconds as a batch. this will allow Tggl users to see on the Tggl dashboard which flags are being used and which are not. so everytime the app calls the SDK to see if a flag is active or not, the SDK will report that to the Tggl API.
+The goal of the reporting is to accumulate data in memory and send it to the Tggl API every few seconds as a batch. This will allow Tggl users to see on the Tggl dashboard which flags are being used and which are not. So everytime the app calls the SDK to see if a flag is active or not, the SDK will report that to the Tggl API.
 
 This class can be instantiated and used like a logger:
 ```typescript
 const reporter = new Reporting()
 
 reporter.reportFlag('my-feature', { 
-  active: true, 
   value: 'Variation A', 
   default: 'Variation B',
 })
 reporter.reportFlag('my-other-feature', { 
-  active: false, 
-  value: null, 
-  default: null 
+  value: true, 
+  default: true 
 })
 reporter.reportContext({
   userId: 'foo',
@@ -23,7 +21,7 @@ reporter.reportContext({
 })
 ```
 
-Note that calling `reportFlag` and `reportContext` simply accumulates the data in memory, no API call is performed. The actual API call call is performed in the background at regular intervals (depending on the technology).
+Note that calling `reportFlag` and `reportContext` simply accumulates the data in memory, no API call is performed. The actual API call is performed in the background at regular intervals (depending on the technology) or when the instance is destroyed.
 
 ## When is the report actually sent?
 It depends on you language and platform.
@@ -34,7 +32,7 @@ It depends on you language and platform.
 It is up to you to implement the best way to send the report based on your language, ideally without blocking the main thread (in the background) and without the user having to do anything manually.
 
 ## API call documentation
-Everything you need to know about the API call that sends the report is documented [here](https://tggl.io/developers/api-reference/reporting).
+Everything you need to know about the API call that sends the report is documented [here](https://tggl.io/developers/api-reference/reporting). Note that the JS implementation has a `mergeReport` method that should not be implemented.
 
 ## Reference JS implementation
 You can copy the JS implementation available [here](https://github.com/Tggl/js-tggl-client/blob/master/src/TgglReporting.ts).
@@ -63,12 +61,10 @@ for (const { name, app, appPrefix, calls, result } of reportingTests) {
       // If the type is flag, call reportFlag
       // It will have those properties
       // - slug: a string, the slug of the flag
-      // - active: a boolean, the active state of the flag
       // - value?: any, the value of the flag
       // - defaultValue?: any, the default value of the flag
       if (call.type === 'flag') {
         reporting.reportFlag(call.slug, {
-          active: call.active,
           value: call.value,
           default: call.defaultValue,
         })
@@ -93,9 +89,9 @@ Those tests should cover all the edge cases and make sure the report is sent cor
 ## `reportFlag` signature
 You can choose whichever signature feels good for your language:
 ```typescript
-function reportFlag(slug: string, active: boolean, value?: any, defaultValue?: any): void
-function reportFlag(slug: string, options: { active: boolean, value?: any, defaultValue?: any }): void
-function reportFlag(options: { slug: string, active: boolean, value?: any, defaultValue?: any }): void
+function reportFlag(slug: string, value?: any, defaultValue?: any): void
+function reportFlag(slug: string, options: { value?: any, defaultValue?: any }): void
+function reportFlag(options: { slug: string, value?: any, defaultValue?: any }): void
 ```
 
 Notice that `value` and `defaultValue` are optional (default to `null`), and could be of any type (null, string, float, int, object, array, or boolean, basically anything that is serializable to JSON).
@@ -106,7 +102,7 @@ Calling this function just accumulates the data in memory until the report is se
 ```typescript
 function reportContext(context: Record<string, any>): void
 ```
-Calling this method also acucmulates data without sending anything until the rport is actually sent in the background.
+Calling this method also accumulates data without sending anything until the report is actually sent in the background.
 
 You can follow the doc and the JS implementation, but in short:
 - `receivedProperties` sends all the received keys with dates of first and last received.

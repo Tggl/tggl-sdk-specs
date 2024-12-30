@@ -9,11 +9,6 @@ const client = new TgglLocalClient('YOUR_SERVER_API_KEY')
 await client.fetchConfig()
  
 // Evaluation is performed locally
-client.isActive({ userId: 'foo' }, 'my-feature')
-client.isActive({ userId: 'bar' }, 'my-feature')
- 
-// You can also get the value of a flag, with and without default value
-client.get({ userId: 'baz' }, 'my-feature')
 client.get({ userId: 'foobar' }, 'my-feature', 42)
 ```
 
@@ -40,9 +35,8 @@ await saveConfig(config)
 The LocalClient is responsible for reporting usage with a `Reporter` (as private member).
 
 It should report usage of flags with the `reportFlag` and usage of contexts with the `reportContext` methods of the `Reporting` class:
-- When isActive is called
 - When get is called
-- When getAllACtiveFlags is called (does not report flags then, only reports context)
+- When getAllActiveFlags is called (does not report flags then, only reports context)
 
 ## Polling
 If your language is long-lived like Node.js, it should be able to poll the API to get the latest configuration. For short-lived languages like PHP, the configuration should be updated manually.
